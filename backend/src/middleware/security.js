@@ -47,10 +47,9 @@ const loginLimiter = rateLimit({
   keyGenerator: (req) =>
     `${ipKeyGenerator(req.ip)}:${createHash("sha256")
       .update(
-        (typeof req.body?.email === "string"
-          ? req.body.email
-          : ""
-        ).toLowerCase(),
+        (typeof req.body?.email === "string" ? req.body.email : "")
+          .trim()
+          .toLowerCase(),
       )
       .digest("hex")}`,
 });

@@ -132,6 +132,15 @@ test("Finanças, família e segurança com MySQL real", async (t) => {
           ).status,
           400,
         );
+        assert.equal(
+          (
+            await call(null, "POST", "/api/auth/login", {
+              email: { toString: "" },
+              password,
+            })
+          ).status,
+          400,
+        );
         for (const actor of [owner, stranger]) {
           const created = await call(null, "POST", "/api/users", actor.data);
           assert.equal(created.status, 201);
@@ -846,7 +855,7 @@ test("Finanças, família e segurança com MySQL real", async (t) => {
         let result;
         for (let attempt = 0; attempt < 11; attempt++)
           result = await call(null, "POST", "/api/auth/login", {
-            email,
+            email: `${" ".repeat(attempt)}${email.toUpperCase()} `,
             password: "invalida",
           });
         assert.equal(result.status, 429);
