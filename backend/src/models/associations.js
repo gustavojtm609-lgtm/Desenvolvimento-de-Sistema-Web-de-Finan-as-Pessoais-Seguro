@@ -1,0 +1,13 @@
+const { User } = require("./user");
+const { Category } = require("./category");
+const { Transaction } = require("./expense");
+const { Session } = require("./session");
+const { Receipt } = require("./receipt");
+User.belongsTo(User, { as: "parent", foreignKey: "parentId" });
+User.hasMany(User, { as: "children", foreignKey: "parentId" });
+Category.belongsTo(User, { foreignKey: "userId" });
+Transaction.belongsTo(User, { foreignKey: "userId" });
+Transaction.belongsTo(Category, { as: "category", foreignKey: "categoryId" });
+Transaction.hasOne(Receipt, { as: "receipt", foreignKey: "expenseId" });
+Receipt.belongsTo(Transaction, { foreignKey: "expenseId" });
+Session.belongsTo(User, { as: "user", foreignKey: "userId" });

@@ -1,0 +1,45 @@
+{
+  "name": "expenses-control",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Expenses Control integrado: React, Express e MySQL.",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "setup": "node scripts/setup.cjs",
+    "dev": "concurrently --kill-others --names API,WEB --prefix-colors cyan,green \"npm run dev --workspace backend\" \"npm run dev --workspace frontend\"",
+    "build": "npm run build --workspace frontend",
+    "start": "npm start --workspace backend",
+    "lint": "npm run lint --workspace frontend",
+    "db:up": "docker compose up -d --wait db",
+    "db:create": "npm run db:create --workspace backend",
+    "db:migrate": "npm run db:migrate --workspace backend",
+    "db:seed": "npm run db:seed --workspace backend",
+    "test:integration": "node --test tests/integration.test.cjs",
+    "test:e2e": "node tests/browser-smoke.cjs",
+    "test": "npm run test:integration"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "playwright": "^1.65.1"
+  },
+  "overrides": {
+    "sequelize": {
+      "uuid": "11.1.1"
+    },
+    "js-beautify": {
+      "glob": "14.0.6"
+    },
+    "editorconfig": {
+      "minimatch": "11.0.9"
+    },
+    "nodemon": {
+      "minimatch": "11.0.9"
+    }
+  }
+}
