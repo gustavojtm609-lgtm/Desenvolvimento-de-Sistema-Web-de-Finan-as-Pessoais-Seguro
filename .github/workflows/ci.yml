@@ -1,0 +1,60 @@
+name: Qualidade e segurança
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: expenses_control_test
+          MYSQL_USER: expenses
+          MYSQL_PASSWORD: senha-exclusiva-ci
+          MYSQL_ROOT_PASSWORD: root-exclusivo-ci
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=30
+    env:
+      MYSQL_HOST: 127.0.0.1
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: expenses_control_test
+      MYSQL_USER: expenses
+      MYSQL_PASSWORD: senha-exclusiva-ci
+      APP_ORIGIN: http://localhost:3000
+      SESSION_COOKIE_SECURE: "false"
+      SESSION_IDLE_MINUTES: 30
+      SESSION_HOURS: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+      - run: npm run db:migrate
+      - run: npm run lint
+      - run: npm run build
+      - run: npm test
+      - run: npm audit --omit=dev --audit-level=high
+      - run: npx playwright install --with-deps chromium
+      - name: Iniciar aplicação
+        run: npm start > /tmp/expenses-api.log 2>&1 &
+      - name: Aguardar API
+        run: |
+          node - <<'JS'
+          (async () => {
+            for (let i = 0; i < 30; i++) {
+              try { if ((await fetch('http://localhost:3000/api/health')).ok) return; } catch {}
+              await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+            process.exit(1);
+          })();
+          JS
+      - run: npm run test:e2e
